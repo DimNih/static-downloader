@@ -16,19 +16,7 @@ export interface VideoFormat {
 }
 
 class DownloadService {
-  private BACKEND_URL = 'http://localhost:4000';
-  private ws: WebSocket | null = null;
-
-  constructor() {
-    this.connectWebSocket();
-  }
-
-  private connectWebSocket() {
-    this.ws = new WebSocket('ws://localhost:4000');
-    this.ws.onopen = () => console.log('WebSocket connected');
-    this.ws.onerror = (error) => console.error('WebSocket error:', error);
-    this.ws.onclose = () => console.log('WebSocket closed');
-  }
+  private BACKEND_URL = 'https://bek-downloader-wqfn.vercel.app';
 
   async getVideoInfo(url: string): Promise<VideoInfo> {
     try {
@@ -44,9 +32,8 @@ class DownloadService {
     }
   }
 
-  async downloadFile(url: string, filename: string, type: 'video' | 'audio', quality: string, onProgress?: (progress: number) => void): Promise<void> {
+  async downloadFile(url: string, filename: string, type: 'video' | 'audio', quality: string): Promise<void> {
     try {
-      const downloadId = Date.now().toString();
       const videoInfo = await this.getVideoInfo(url);
       const isValidQuality = videoInfo.formats.some(f => f.type === type && f.quality === quality);
       if (!isValidQuality) {
@@ -56,23 +43,6 @@ class DownloadService {
         throw new Error('Audio downloads only support "Best Audio" quality.');
       }
 
-      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-        this.ws.send(JSON.stringify({ downloadId }));
-      }
-
-      if (this.ws && onProgress) {
-        this.ws.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            if (data.downloadId === downloadId) {
-              onProgress(data.progress);
-            }
-          } catch (err) {
-            console.error('WebSocket message parse error:', err);
-          }
-        };
-      }
-
       const response = await axios({
         url: `${this.BACKEND_URL}/api/download`,
         method: 'POST',
@@ -80,8 +50,7 @@ class DownloadService {
           url,
           filename,
           type,
-          quality,
-          downloadId
+          quality
         },
         responseType: 'blob'
       });
@@ -95,7 +64,6 @@ class DownloadService {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
-
     } catch (error: any) {
       console.error('Download failed:', error);
       throw new Error(error.response?.data?.error || 'Download failed.');

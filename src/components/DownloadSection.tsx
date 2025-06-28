@@ -54,10 +54,7 @@ const DownloadSection: React.FC = () => {
         filename,
         format.type,
         format.quality,
-        (progress: number) => {
-          console.log(`Download progress: ${progress}%`); // Logging untuk debugging
-          setDownloadProgress(progress);
-        }
+        
       );
     } catch (err) {
       console.error('Error during download:', err);
