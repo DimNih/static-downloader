@@ -16,7 +16,7 @@ export interface VideoFormat {
 }
 
 class DownloadService {
-  private BACKEND_URL = 'https://bek-downloader-wqfn.vercel.app';
+  private BACKEND_URL = 'http://localhost:3001';
 
   async getVideoInfo(url: string): Promise<VideoInfo> {
     try {
