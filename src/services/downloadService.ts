@@ -5,6 +5,7 @@ export interface VideoInfo {
   thumbnail: string;
   duration: string;
   formats: VideoFormat[];
+  previewUrl?: string;
 }
 
 export interface VideoFormat {
