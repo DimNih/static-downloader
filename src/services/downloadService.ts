@@ -63,15 +63,15 @@ class DownloadService {
     window.URL.revokeObjectURL(downloadUrl);
   }
 
-  validateUrl(url: string, platform: string): boolean {
-    const patterns = {
-      youtube: /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/,
-      facebook: /^(https?:\/\/)?(www\.)?facebook\.com\/.+/,
-      instagram: /^(https?:\/\/)?(www\.)?instagram\.com\/.+/,
-      tiktok: /^(https?:\/\/)?(www\.)?tiktok\.com\/.+/
-    };
-    return patterns[platform as keyof typeof patterns]?.test(url) || false;
-  }
+ validateUrl(url: string, platform: string): boolean {
+  const patterns = {
+    youtube: /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/,
+    facebook: /^(https?:\/\/)?(www\.)?facebook\.com\/.+/,
+    instagram: /^(https?:\/\/)?(www\.)?instagram\.com\/.+/,
+    tiktok: /^(https?:\/\/)?(www\.)?(tiktok\.com|vt\.tiktok\.com)\/.+/
+  };
+  return patterns[platform as keyof typeof patterns]?.test(url) || false;
+}
 }
 
 export const downloadService = new DownloadService();
