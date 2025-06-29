@@ -1,0 +1,4 @@
+{
+  "build": "npm install",
+  "start": "node src/server/index.js"
+}
