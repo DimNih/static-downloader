@@ -1,0 +1,4 @@
+{
+  "build": "npm install --legacy-peer-deps",
+  "start": "node src/server/index.js"
+}
