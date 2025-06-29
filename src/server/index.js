@@ -12,11 +12,12 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const DOWNLOADS_DIR = path.join(__dirname, 'downloads');
+// Gunakan /tmp untuk Vercel
+const DOWNLOADS_DIR = path.join('/tmp', 'downloads');
 if (!fs.existsSync(DOWNLOADS_DIR)) {
   fs.mkdirSync(DOWNLOADS_DIR, { recursive: true });
 }
@@ -32,10 +33,14 @@ const sanitizeFilename = (filename) => {
 app.post('/api/video-info', async (req, res) => {
   const { url } = req.body;
   if (!url) {
+    console.log('No URL provided');
     return res.status(400).json({ error: 'URL is required' });
   }
 
-  const command = `yt-dlp --dump-json --no-warnings "${url}"`;
+  const ytDlpPath = process.env.YT_DLP_PATH || 'yt-dlp'; // Gunakan env untuk Vercel
+  const command = `${ytDlpPath} --dump-json --no-warnings "${url}"`;
+  console.log(`Executing command: ${command}`);
+
   try {
     const { stdout, stderr } = await execAsync(command, { maxBuffer: 1024 * 1024 * 5 });
     if (stderr) console.error(`stderr: ${stderr}`);
@@ -113,7 +118,7 @@ app.post('/api/video-info', async (req, res) => {
       formats: sortedFormats,
     });
   } catch (error) {
-    console.error(`Error: ${error.message}`);
+    console.error(`Video info error: ${error.message}`);
     res.status(500).json({ error: 'Failed to fetch video information.', details: error.message });
   }
 });
@@ -122,6 +127,7 @@ app.post('/api/download', async (req, res) => {
   const { url, filename, type, quality } = req.body;
 
   if (!url || !filename || !type || !quality) {
+    console.log('Invalid download request:', { url, filename, type, quality });
     return res.status(400).json({ error: 'URL, filename, type, and quality are required.' });
   }
 
@@ -134,23 +140,26 @@ app.post('/api/download', async (req, res) => {
     if (files.length > 5) {
       console.log('Cleaning old download files...');
       await Promise.all(
-        files.map((file) => fs.promises.unlink(path.join(DOWNLOADS_DIR, file)).catch((err) => console.warn(`Failed to delete ${file}:`, err)))
+        files.map((file) =>
+          fs.promises.unlink(path.join(DOWNLOADS_DIR, file)).catch((err) => console.warn(`Failed to delete ${file}:`, err))
+        )
       );
     }
   } catch (cleanError) {
     console.warn('Failed to clean old download files:', cleanError);
   }
 
+  const ytDlpPath = process.env.YT_DLP_PATH || 'yt-dlp';
   if (type === 'audio') {
     outputFilePath = path.join(DOWNLOADS_DIR, `${sanitizedFilename}.mp3`);
-    command = `yt-dlp -f "bestaudio/best[ext=mp4]" --extract-audio --audio-format mp3 -o "${outputFilePath}" "${url}"`;
+    command = `${ytDlpPath} -f "bestaudio/best[ext=mp4]" --extract-audio --audio-format mp3 -o "${outputFilePath}" "${url}"`;
   } else if (type === 'video') {
     const height = parseInt(quality.replace('p', ''));
     const formatSelection = height
       ? `bestvideo[height=${height}][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height=${height}]/best[ext=mp4]`
       : 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best';
     outputFilePath = path.join(DOWNLOADS_DIR, `${sanitizedFilename}.mp4`);
-    command = `yt-dlp -f "${formatSelection}" --merge-output-format mp4 -o "${outputFilePath}" "${url}"`;
+    command = `${ytDlpPath} -f "${formatSelection}" --merge-output-format mp4 -o "${outputFilePath}" "${url}"`;
   } else {
     return res.status(400).json({ error: 'Invalid download type.' });
   }
@@ -167,6 +176,7 @@ app.post('/api/download', async (req, res) => {
     );
 
     if (!actualDownloadedFile) {
+      console.log('Downloaded file not found:', sanitizedFilename);
       return res.status(500).json({ error: 'Downloaded file not found.' });
     }
 
@@ -185,14 +195,14 @@ app.post('/api/download', async (req, res) => {
       });
     });
   } catch (error) {
-    console.error(`Download exec
-                
-error: ${error.message}`);
+    console.error(`Download error: ${error.message}`);
     return res.status(500).json({ error: 'Failed to download file.', details: error.message });
   }
 });
 
-const PORT = process.env.PORT || 3001; // Changed to 3001
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+export default app;
