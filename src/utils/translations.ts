@@ -4,6 +4,9 @@ export const translations = {
     platforms: 'Platforms',
     download: 'Download',
     
+    youtubeDownloaderError: "YouTube Downloader Error",
+    youtubeDownloaderDesc: "Scraping functionality is not yet available.",
+
     // Hero
     heroTitle: 'Download Your',
     heroSubtitle: 'Favorite Content',
@@ -73,7 +76,10 @@ export const translations = {
     secureDesc: 'Privasi Anda dilindungi dengan koneksi terenkripsi',
     mobileFriendly: 'Ramah Mobile',
     mobileFriendlyDesc: 'Bekerja sempurna di semua perangkat dan ukuran layar',
-    
+
+    youtubeDownloaderError: "Youtube Downloader Masih Error",
+    youtubeDownloaderDesc: "Kurang Tahu Scraping-nya.",
+
     // Platform Selector
     choosePlatform: 'Pilih Platform Anda',
     choosePlatformDesc: 'Pilih platform media sosial yang ingin Anda unduh kontennya',
@@ -106,6 +112,7 @@ export const translations = {
     duration: 'Durasi',
     note: 'Catatan:',
     noteDesc: 'Pengunduh ini mendukung berbagai format dan kualitas. Pilih opsi terbaik sesuai kebutuhan Anda.',
+    
     
     // Footer
     quickLinks: 'Tautan Cepat',
