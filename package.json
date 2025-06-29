@@ -4,13 +4,12 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev:frontend": "vite",
-    "dev:backend": "ts-node src/server/index.js",
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
+  "dev:frontend": "vite",
+  "dev:backend": "ts-node src/server/index.js",
+  "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+  "build": "vite build",
+  "start": "node src/server/index.js"
+},
   "dependencies": {
     "@types/node": "^24.0.7",
     "axios": "^1.10.0",
