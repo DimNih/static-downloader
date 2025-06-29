@@ -29,7 +29,7 @@ class DownloadService {
     filename: string,
     type: 'video' | 'audio',
     quality: string,
-    onProgress?: (percent: number) => void
+    
   ): Promise<void> {
     const videoInfo = await this.getVideoInfo(url);
     const isValidQuality = videoInfo.formats.some(f => f.type === type && f.quality === quality);
@@ -45,12 +45,6 @@ class DownloadService {
       method: 'POST',
       data: { url, filename, type, quality },
       responseType: 'blob',
-      onDownloadProgress: (progressEvent) => {
-        if (progressEvent.total) {
-          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          if (onProgress) onProgress(percent);
-        }
-      }
     });
 
     const blob = new Blob([response.data]);
