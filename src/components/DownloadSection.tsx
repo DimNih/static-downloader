@@ -183,15 +183,7 @@ const DownloadSection: React.FC = () => {
                 />
               )}
 
-              {isDownloading && (
-                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                  <div
-                    className="bg-blue-600 h-2.5 rounded-full"
-                    style={{ width: `${downloadProgress}%` }}
-                  ></div>
-                  <p className="text-center mt-2">{downloadProgress}%</p>
-                </div>
-              )}
+            
 
               <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-100/50 border-slate-200'}`}>
                 <p className={`text-sm text-center ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>

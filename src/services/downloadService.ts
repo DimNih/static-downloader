@@ -17,7 +17,7 @@ export interface VideoFormat {
 }
 
 class DownloadService {
-  private BACKEND_URL = 'https://bek-downloader-production.up.railway.app';
+  private BACKEND_URL = 'https://bekend-downloader-production.up.railway.app';
 
   async getVideoInfo(url: string): Promise<VideoInfo> {
     const response = await axios.post<VideoInfo>(`${this.BACKEND_URL}/api/video-info`, { url });
@@ -29,7 +29,7 @@ class DownloadService {
     filename: string,
     type: 'video' | 'audio',
     quality: string,
-    
+    onProgress?: (percent: number) => void
   ): Promise<void> {
     const videoInfo = await this.getVideoInfo(url);
     const isValidQuality = videoInfo.formats.some(f => f.type === type && f.quality === quality);
@@ -45,6 +45,12 @@ class DownloadService {
       method: 'POST',
       data: { url, filename, type, quality },
       responseType: 'blob',
+      onDownloadProgress: (progressEvent) => {
+        if (progressEvent.total) {
+          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          if (onProgress) onProgress(percent);
+        }
+      }
     });
 
     const blob = new Blob([response.data]);

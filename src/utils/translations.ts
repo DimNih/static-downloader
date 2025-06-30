@@ -6,6 +6,8 @@ export const translations = {
     
     youtubeDownloaderError: "YouTube Downloader Error",
     youtubeDownloaderDesc: "Scraping functionality is not yet available.",
+    videoPreviewError: "Error occurred while loading video preview.",
+    videoPlaybackError: "Error occurred while playing video.",
 
     // Hero
     heroTitle: 'Download Your',
@@ -79,6 +81,8 @@ export const translations = {
 
     youtubeDownloaderError: "Youtube Downloader Masih Error",
     youtubeDownloaderDesc: "Kurang Tahu Scraping-nya.",
+    videoPlaybackError: "Terjadi kesalahan saat memutar video.",
+    videoPreviewError: "Terjadi kesalahan saat memuat pratinjau video.",
 
     // Platform Selector
     choosePlatform: 'Pilih Platform Anda',
