@@ -29,7 +29,7 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({
     if (!video) return;
 
     const handleError = () => {
-      setVideoError(t.videoPreviewError || 'Failed to load video preview');
+      setVideoError(t.videoPreviewError || 'Gagal memuat video preview');
       setShowPreview(false);
     };
 
@@ -52,8 +52,8 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({
       }
       setIsPlaying(!isPlaying);
     } catch (err) {
-      console.error('Video playback error:', err);
-      setVideoError(t.videoPlaybackError || 'Unable to play video');
+      console.error('Error pemutaran video:', err);
+      setVideoError(t.videoPlaybackError || 'Tidak dapat memutar video');
     }
   };
 
@@ -65,6 +65,13 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({
       setIsPlaying(false);
     }
   };
+
+  // Fallback ke YouTube embed jika previewUrl tidak valid
+  const youtubeEmbedUrl = videoInfo.previewUrl
+    ? videoInfo.previewUrl
+    : `https://www.youtube.com/embed/${
+        new URL(videoInfo.formats[0]?.url || 'https://www.youtube.com/watch?v=').searchParams.get('v') || ''
+      }?modestbranding=1&rel=0`;
 
   return (
     <div className={`backdrop-blur-md rounded-3xl p-6 border transition-all duration-300 ${
@@ -81,8 +88,8 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({
               className="w-full h-auto max-h-96 object-contain"
               onClick={togglePlay}
               loop
-              muted
-              preload="metadata"
+              controls // Tambahkan controls untuk memudahkan pengguna
+              preload="auto" // Ubah ke auto untuk memuat lebih cepat
             />
             {!isPlaying && (
               <div className="absolute inset-0 bg-black/20 rounded-2xl flex items-center justify-center">
@@ -113,20 +120,33 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({
           </div>
         ) : (
           <div className="relative">
-            <img
-              src={videoInfo.thumbnail || 'https://via.placeholder.com/320x180'}
-              alt={videoInfo.title}
-              className="w-full h-auto rounded-2xl cursor-pointer"
-              onClick={togglePreview}
-            />
-            <div className="absolute inset-0 bg-black/20 rounded-2xl flex items-center justify-center">
-              <button
+            {videoError ? (
+              // Fallback ke iframe YouTube
+              <iframe
+                src={youtubeEmbedUrl}
+                title={videoInfo.title}
+                className="w-full h-96 rounded-2xl"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            ) : (
+              <img
+                src={videoInfo.thumbnail || 'https://via.placeholder.com/320x180'}
+                alt={videoInfo.title}
+                className="w-full h-auto rounded-2xl cursor-pointer"
                 onClick={togglePreview}
-                className={`p-4 rounded-full ${isDarkMode ? 'bg-slate-800/70 text-white' : 'bg-white/80 text-slate-900'} hover:scale-110 transition-transform`}
-              >
-                <Play className="w-12 h-12" />
-              </button>
-            </div>
+              />
+            )}
+            {!showPreview && (
+              <div className="absolute inset-0 bg-black/20 rounded-2xl flex items-center justify-center">
+                <button
+                  onClick={togglePreview}
+                  className={`p-4 rounded-full ${isDarkMode ? 'bg-slate-800/70 text-white' : 'bg-white/80 text-slate-900'} hover:scale-110 transition-transform`}
+                >
+                  <Play className="w-12 h-12" />
+                </button>
+              </div>
+            )}
             <div className={`absolute bottom-2 right-2 px-2 py-1 rounded-lg text-xs font-medium ${
               isDarkMode ? 'bg-black/70 text-white' : 'bg-white/90 text-slate-900'
             }`}>
