@@ -17,7 +17,7 @@ export interface VideoFormat {
 }
 
 class DownloadService {
-  private BACKEND_URL = 'http://localhost:8080';
+  private BACKEND_URL = 'https://https://bekend-downloader-production.up.railway.app/';
 
   async getVideoInfo(url: string): Promise<VideoInfo> {
     try {
