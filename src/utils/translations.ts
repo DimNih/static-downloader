@@ -9,6 +9,8 @@ export const translations = {
     videoPreviewError: "Error occurred while loading video preview.",
     videoPlaybackError: "Error occurred while playing video.",
 
+    noThumbnail: "No Thumbnail Available",
+
     // Hero
     heroTitle: 'Download Your',
     heroSubtitle: 'Favorite Content',
@@ -93,6 +95,8 @@ export const translations = {
     tiktokDesc: 'Dapatkan video dan suara TikTok favorit Anda',
     selected: 'Dipilih',
     
+    noThumbnail: "Tidak Ada Thumbnail Tersedia",
+
     // Download Section
     selectPlatformFirst: 'Pilih Platform Terlebih Dahulu',
     selectPlatformDesc: 'Silakan pilih platform di atas untuk mulai mengunduh konten Anda',
