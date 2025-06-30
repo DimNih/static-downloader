@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { VideoInfo, VideoFormat } from '../services/downloadService';
 import { useApp } from '../context/AppContext';
 import { translations } from '../utils/translations';
-import { Download, Play, Pause, Music, FileVideo, Clock, AlertCircle, Eye } from 'lucide-react';
+import { Download, Play, Pause, Music, FileVideo, Clock, Eye, Volume2, VolumeX } from 'lucide-react';
 
 interface VideoPreviewProps {
   videoInfo: VideoInfo;
@@ -21,61 +21,75 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({
   const t = translations[language];
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
-  const [videoError, setVideoError] = useState<string | null>(null);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    const handleError = () => {
-      setVideoError(t.videoPreviewError || 'Gagal memuat video preview');
-      setShowPreview(false);
-    };
+    const handleTimeUpdate = () => setCurrentTime(video.currentTime);
+    const handleLoadedMetadata = () => setDuration(video.duration);
 
-    video.addEventListener('error', handleError);
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
 
     return () => {
-      video.removeEventListener('error', handleError);
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
     };
-  }, [t]);
+  }, []);
 
-  const togglePlay = async () => {
+  const togglePlay = () => {
     const video = videoRef.current;
     if (!video) return;
 
-    try {
-      if (isPlaying) {
-        video.pause();
-      } else {
-        await video.play();
-      }
-      setIsPlaying(!isPlaying);
-    } catch (err) {
-      console.error('Error pemutaran video:', err);
-      setVideoError(t.videoPlaybackError || 'Tidak dapat memutar video');
+    if (isPlaying) {
+      video.pause();
+    } else {
+      video.play();
     }
+    setIsPlaying(!isPlaying);
+  };
+
+  const toggleMute = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = !video.muted;
+    setIsMuted(video.muted);
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const seekTime = (parseFloat(e.target.value) / 100) * duration;
+    video.currentTime = seekTime;
+    setCurrentTime(seekTime);
+  };
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
   const togglePreview = () => {
     setShowPreview(!showPreview);
-    setVideoError(null);
     if (!showPreview && videoRef.current) {
       videoRef.current.currentTime = 0;
       setIsPlaying(false);
     }
   };
 
-  // Fallback ke YouTube embed jika previewUrl tidak valid
-  const youtubeEmbedUrl = videoInfo.previewUrl
-    ? videoInfo.previewUrl
-    : `https://www.youtube.com/embed/${
-        new URL(videoInfo.formats[0]?.url || 'https://www.youtube.com/watch?v=').searchParams.get('v') || ''
-      }?modestbranding=1&rel=0`;
-
   return (
     <div className={`backdrop-blur-md rounded-3xl p-6 border transition-all duration-300 ${
-      isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-white/70 border-slate-200 shadow-lg'
+      isDarkMode 
+        ? 'bg-slate-900/50 border-slate-700' 
+        : 'bg-white/70 border-slate-200 shadow-lg'
     }`}>
       {/* Video Preview Section */}
       <div className="mb-6">
@@ -88,80 +102,74 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({
               className="w-full h-auto max-h-96 object-contain"
               onClick={togglePlay}
               loop
-              controls // Tambahkan controls untuk memudahkan pengguna
-              preload="auto" // Ubah ke auto untuk memuat lebih cepat
+              muted={isMuted}
             />
-            {!isPlaying && (
-              <div className="absolute inset-0 bg-black/20 rounded-2xl flex items-center justify-center">
-                <button
-                  onClick={togglePlay}
-                  className={`p-4 rounded-full ${isDarkMode ? 'bg-slate-800/70 text-white' : 'bg-white/80 text-slate-900'} hover:scale-110 transition-transform`}
-                >
-                  <Play className="w-12 h-12" />
-                </button>
-              </div>
-            )}
-            {isPlaying && (
-              <div className="absolute inset-0 bg-black/20 rounded-2xl flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                <button
-                  onClick={togglePlay}
-                  className={`p-4 rounded-full ${isDarkMode ? 'bg-slate-800/70 text-white' : 'bg-white/80 text-slate-900'} hover:scale-110 transition-transform`}
-                >
-                  <Pause className="w-12 h-12" />
-                </button>
-              </div>
-            )}
-            <div className={`absolute bottom-2 right-2 px-2 py-1 rounded-lg text-xs font-medium ${
-              isDarkMode ? 'bg-black/70 text-white' : 'bg-white/90 text-slate-900'
+            
+            {/* Video Controls */}
+            <div className={`absolute bottom-0 left-0 right-0 p-4 ${
+              isDarkMode ? 'bg-gradient-to-t from-slate-900/90 to-transparent' : 'bg-gradient-to-t from-white/90 to-transparent'
             }`}>
-              <Clock className="w-3 h-3 inline mr-1" />
-              {videoInfo.duration}
+              <div className="flex items-center space-x-2 mb-2">
+                <button 
+                  onClick={togglePlay} 
+                  className={`p-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}
+                >
+                  {isPlaying ? (
+                    <Pause className="w-5 h-5" />
+                  ) : (
+                    <Play className="w-5 h-5" />
+                  )}
+                </button>
+                <button 
+                  onClick={toggleMute} 
+                  className={`p-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}
+                >
+                  {isMuted ? (
+                    <VolumeX className="w-5 h-5" />
+                  ) : (
+                    <Volume2 className="w-5 h-5" />
+                  )}
+                </button>
+                <div className={`text-xs ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                  {formatTime(currentTime)} / {formatTime(duration)}
+                </div>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={duration ? (currentTime / duration) * 100 : 0}
+                onChange={handleSeek}
+                className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+                style={{
+                  background: isDarkMode
+                    ? `linear-gradient(to right, #3b82f6 ${(currentTime / duration) * 100}%, #4b5563 ${(currentTime / duration) * 100}%)`
+                    : `linear-gradient(to right, #3b82f6 ${(currentTime / duration) * 100}%, #d1d5db ${(currentTime / duration) * 100}%)`,
+                }}
+              />
             </div>
           </div>
         ) : (
           <div className="relative">
-            {videoError ? (
-              // Fallback ke iframe YouTube
-              <iframe
-                src={youtubeEmbedUrl}
-                title={videoInfo.title}
-                className="w-full h-96 rounded-2xl"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            ) : (
-              <img
-                src={videoInfo.thumbnail || 'https://via.placeholder.com/320x180'}
-                alt={videoInfo.title}
-                className="w-full h-auto rounded-2xl cursor-pointer"
+            <img
+              src={videoInfo.thumbnail || 'https://via.placeholder.com/320x180'}
+              alt={videoInfo.title}
+              className="w-full h-auto rounded-2xl cursor-pointer"
+              onClick={togglePreview}
+            />
+            <div className="absolute inset-0 bg-black/20 rounded-2xl flex items-center justify-center">
+              <button 
                 onClick={togglePreview}
-              />
-            )}
-            {!showPreview && (
-              <div className="absolute inset-0 bg-black/20 rounded-2xl flex items-center justify-center">
-                <button
-                  onClick={togglePreview}
-                  className={`p-4 rounded-full ${isDarkMode ? 'bg-slate-800/70 text-white' : 'bg-white/80 text-slate-900'} hover:scale-110 transition-transform`}
-                >
-                  <Play className="w-12 h-12" />
-                </button>
-              </div>
-            )}
+                className={`p-4 rounded-full ${isDarkMode ? 'bg-slate-800/70 text-white' : 'bg-white/80 text-slate-900'} hover:scale-110 transition-transform`}
+              >
+                <Play className="w-12 h-12" />
+              </button>
+            </div>
             <div className={`absolute bottom-2 right-2 px-2 py-1 rounded-lg text-xs font-medium ${
               isDarkMode ? 'bg-black/70 text-white' : 'bg-white/90 text-slate-900'
             }`}>
               <Clock className="w-3 h-3 inline mr-1" />
               {videoInfo.duration}
-            </div>
-          </div>
-        )}
-        {videoError && (
-          <div className={`mt-2 p-3 rounded-xl border ${
-            isDarkMode ? 'bg-red-900/20 border-red-700 text-red-300' : 'bg-red-50 border-red-200 text-red-700'
-          }`}>
-            <div className="flex items-center space-x-2">
-              <AlertCircle className="w-5 h-5" />
-              <span>{videoError}</span>
             </div>
           </div>
         )}
