@@ -6,7 +6,6 @@ export interface VideoInfo {
   duration: string;
   formats: VideoFormat[];
   previewUrl?: string;
-  platform?: string; // Added platform field
 }
 
 export interface VideoFormat {
@@ -18,7 +17,7 @@ export interface VideoFormat {
 }
 
 class DownloadService {
-  private BACKEND_URL = 'https://bekend-downloader-production.up.railway.app/';
+  private BACKEND_URL = 'https://bekend-downloader-production.up.railway.app';
 
   async getVideoInfo(url: string): Promise<VideoInfo> {
     const response = await axios.post<VideoInfo>(`${this.BACKEND_URL}/api/video-info`, { url });
@@ -33,7 +32,7 @@ class DownloadService {
     onProgress?: (percent: number) => void
   ): Promise<void> {
     const videoInfo = await this.getVideoInfo(url);
-    const isValidQuality = videoInfo.formats.some((f) => f.type === type && f.quality === quality);
+    const isValidQuality = videoInfo.formats.some(f => f.type === type && f.quality === quality);
     if (!isValidQuality) {
       throw new Error(`Invalid quality: ${quality}.`);
     }
@@ -51,7 +50,7 @@ class DownloadService {
           const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
           if (onProgress) onProgress(percent);
         }
-      },
+      }
     });
 
     const blob = new Blob([response.data]);
@@ -65,15 +64,15 @@ class DownloadService {
     window.URL.revokeObjectURL(downloadUrl);
   }
 
-  validateUrl(url: string, platform: string): boolean {
-    const patterns = {
-      youtube: /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/,
-      facebook: /^(https?:\/\/)?(www\.)?(facebook\.com|fb\.com)\/.+/,
-      instagram: /^(https?:\/\/)?(www\.)?instagram\.com\/.+/,
-      tiktok: /^(https?:\/\/)?(www\.)?(tiktok\.com|vt\.tiktok\.com)\/.+/,
-    };
-    return patterns[platform as keyof typeof patterns]?.test(url) || false;
-  }
+ validateUrl(url: string, platform: string): boolean {
+  const patterns = {
+    youtube: /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/,
+    facebook: /^(https?:\/\/)?(www\.)?facebook\.com\/.+/,
+    instagram: /^(https?:\/\/)?(www\.)?instagram\.com\/.+/,
+    tiktok: /^(https?:\/\/)?(www\.)?(tiktok\.com|vt\.tiktok\.com)\/.+/
+  };
+  return patterns[platform as keyof typeof patterns]?.test(url) || false;
+}
 }
 
 export const downloadService = new DownloadService();
