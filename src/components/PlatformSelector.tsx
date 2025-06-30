@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useApp } from '../context/AppContext';
 import { translations } from '../utils/translations';
-import { Play, Users, Camera, Music, X, Youtube } from 'lucide-react';
+import { Play, Users, Camera, Music } from 'lucide-react';
 
 const platforms = [
   {
@@ -41,13 +41,9 @@ const platforms = [
 const PlatformSelector: React.FC = () => {
   const { selectedPlatform, setSelectedPlatform, language, isDarkMode } = useApp();
   const t = translations[language];
-  const [showPopup, setShowPopup] = useState(false);
 
   const handlePlatformClick = (platformId: string) => {
     setSelectedPlatform(platformId);
-    if (platformId === 'youtube') {
-      setShowPopup(true);
-    }
   };
 
   return (
@@ -124,45 +120,6 @@ const PlatformSelector: React.FC = () => {
           })}
         </div>
       </div>
-
-      {/* Popup */}
-      {showPopup && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center transition-all duration-300">
-          <div className={`
-            rounded-2xl p-6 max-w-sm w-full relative shadow-2xl transform transition-all duration-300
-            ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-200'}
-          `}>
-            <button
-              className={`
-                absolute top-3 right-3 rounded-full p-1 transition-colors duration-300
-                ${isDarkMode ? 'text-slate-300 hover:text-white hover:bg-slate-700' : 'text-gray-500 hover:text-black hover:bg-gray-100'}
-              `}
-              onClick={() => setShowPopup(false)}
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div className="flex flex-col items-center">
-              <div className={`
-                w-16 h-16 rounded-xl bg-gradient-to-r from-red-500 to-red-600 flex items-center justify-center mb-4 shadow-lg
-              `}>
-                <Youtube className="w-8 h-8 text-white" />
-              </div>
-              <h2 className={`
-                text-xl font-semibold mb-2 text-center transition-colors duration-300
-                ${isDarkMode ? 'text-white' : 'text-slate-900'}
-              `}>
-                {t.youtubeDownloaderError || 'YouTube Downloader Error'}
-              </h2>
-              <p className={`
-                text-center text-sm leading-relaxed transition-colors duration-300
-                ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}
-              `}>
-                {t.youtubeDownloaderDesc || 'Scraping functionality is not yet available.'}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 };
