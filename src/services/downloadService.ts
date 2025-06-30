@@ -17,7 +17,7 @@ export interface VideoFormat {
 }
 
 class DownloadService {
-  private BACKEND_URL = 'https://bek-downloader-production.up.railway.app';
+  private BACKEND_URL = 'https://bekend-downloader-production.up.railway.app';
 
   async getVideoInfo(url: string): Promise<VideoInfo> {
     const response = await axios.post<VideoInfo>(`${this.BACKEND_URL}/api/video-info`, { url });
